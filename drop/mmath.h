@@ -11,12 +11,6 @@
 
 #include <cmath>
 
-template <typename T>
-struct vector_type
-{
-    using type = typename T::value_type;
-};
-
 template <class T>
 T sigmoid( T x )
 {

@@ -29,6 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C84A371C221B85C800D07AE0 /* misk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = misk.h; sourceTree = "<group>"; };
 		C8B706A0220D443A00A1BAA4 /* drop */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = drop; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8B706A3220D443A00A1BAA4 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		C8B706AB220D450600A1BAA4 /* libsfml-graphics.2.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = "libsfml-graphics.2.5.dylib"; sourceTree = "<group>"; };
@@ -209,6 +210,7 @@
 				C8B70749220D47DD00A1BAA4 /* obj.h */,
 				C8B7074A220D4CDE00A1BAA4 /* basicbox.h */,
 				C8B7074B220E042100A1BAA4 /* mmath.h */,
+				C84A371C221B85C800D07AE0 /* misk.h */,
 			);
 			path = drop;
 			sourceTree = "<group>";

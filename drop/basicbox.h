@@ -13,6 +13,8 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <cassert>
+#include <type_traits>
 
 #include <SFML/Graphics.hpp>
 
@@ -44,11 +46,23 @@ static void operator+=(  std::vector<T>& lfs, R rhs )
 }
 
 template <class T, class R>
-static void operator*=(  std::vector<T>& lfs, R rhs )
+static typename std::enable_if<!std::is_same<R, std::vector<T>>::value, void>::type
+operator*=(  std::vector<T>& lfs, R rhs )
 {
     for ( auto& l: lfs )
         l *= rhs;
 }
+
+template <class T>
+static void operator*=(  std::vector<T>& lfs, std::vector<T>& rhs )
+{
+    assert( lfs.size( ) == rhs.size( ) && "Vectors must have same size!" );
+    
+    unsigned i = 0;
+    for ( auto& l: lfs )
+        l *= rhs[i++];
+}
+
 
 template <class T, class R>
 static bool operator>(  std::vector<T>& lfs, R rhs )
@@ -78,7 +92,7 @@ private:
     const double deltatime = 0.003; // time step
     const double acceleration = -500; // result of friction
     std::vector<double> pos = { 10, 10, 10 }; // x, y, color
-    double direction = 1.0;
+    std::vector<double> direction = { 1.0, 1.0, 1.0 };
     std::vector<vector_type<decltype( pos )>::type> velocity = { 40, 40, 40 }; // initial velocity (20 is very low 60 is very high)
     
     void updatepos( );
@@ -95,12 +109,12 @@ public:
 
 void basicblock::updatepos( )
 {
-    unsigned i = 0; // so we can also access position
+    unsigned i = 0; // so we can also access position and direction
     for ( auto& v: velocity ) // loop through every velocity
     {
-        if ( (v > 0 && direction > 0) || (v < 0 && direction < 0) ) // velocity / position should not be updated after velocity is 0 (otherwise it will start going backwards increasingly quickly)
+        if ( (v > 0 && direction[i] > 0) || (v < 0 && direction[i] < 0) ) // velocity / position should not be updated after velocity is 0 (otherwise it will start going backwards increasingly quickly)
         {
-            auto vectorcorrection = 0.5 * acceleration * deltatime * deltatime * direction; // correct for the fact that velocity isnt constant during the time stamp (time distributed)
+            auto vectorcorrection = 0.5 * acceleration * deltatime * deltatime * direction[i]; // correct for the fact that velocity isnt constant during the time stamp (time distributed)
             
             pos[i] += v * deltatime; // updating position based on velocity
             v += vectorcorrection; // adding friction in the from of constant acceleration in the opposite direction
@@ -121,14 +135,8 @@ void basicblock::updatepos( )
 
 void basicblock::changedirections( )
 { // make direction the oposite of what it is
-    direction = -direction;
+    direction *= -1.0;
     velocity *= direction;
-}
-
-void basicblock::setdirection( double dir )
-{ // set the direction to a specific direction
-    direction = dir;
-    velocity *= direction; // multiply the velocity by that direction
 }
 
 void basicblock::onclick( )
@@ -144,29 +152,29 @@ void basicblock::onkey( Keyboard::Key key )
 { // map to key then execute logic based on taht
     switch ( key ) {
         case sf::Keyboard::X: // X adds to the X axis
-            velocity[0] += (5 * direction);
+            velocity[0] += (5 * direction[0]);
             break;
         case sf::Keyboard::Y: // Y adds to the Y axis
-            velocity[1] += (5 * direction);
+            velocity[1] += (5 * direction[1]);
             break;
         case sf::Keyboard::C: // C adds to the Color axis
-            velocity[2] = (20 * direction);
+            velocity[2] = (20 * direction[2]);
             break;
         case sf::Keyboard::Down: // Down makes the direction down (starting direction) and adds 15 in the y axis
-            velocity[1] = (20 * direction);
-            setdirection(1.0);
+            velocity[1] = (20 * direction[1]);
+            direction[1] = 1.0;
             break;
         case sf::Keyboard::Up: // Up does the same thing in the opisite direction as above
-            velocity[1] = (20 * direction);
-            setdirection(-1.0);
+            velocity[1] = (20 * direction[1]);
+            direction[1] = -1.0;
             break;
         case sf::Keyboard::Left: // Left makes the direction left (starting direction) and adds 15 in the x axis
-            velocity[0] = (20 * direction);
-            setdirection(-1.0);
+            velocity[0] = (20 * direction[0]);
+            direction[0] = -1.0;
             break;
         case sf::Keyboard::Right: // I wonder what this does :P
-            velocity[0] = (20 * direction);
-            setdirection(1.0);
+            velocity[0] = (20 * direction[0]);
+            direction[0] = 1.0;
             break;
         case sf::Keyboard::Space: // Reset position (but not velocity)
             pos[0] = 0;
@@ -182,8 +190,8 @@ void basicblock::onkey( Keyboard::Key key )
 }
 
 Shape* basicblock::render( )
-{    
-    if ( pos < 0 || pos > 500 ) changedirections( ); // color can change direction too (fixme?)
+{
+    // if ( pos < 0 || pos > 500 ) changedirections( ); // color can change direction too (fixme?)
     
     updatepos( );
     
